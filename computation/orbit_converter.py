@@ -2,14 +2,11 @@ import math
 import sys
 
 import numpy as np
-from PySide6.QtWidgets import (
-    QApplication, QComboBox, QFormLayout, QGroupBox, QHBoxLayout,
-    QLabel, QLineEdit, QMessageBox, QPushButton, QTextEdit,
-    QVBoxLayout, QWidget
-)
+from PySide6.QtWidgets import (QApplication, QComboBox, QFormLayout, QGroupBox, QHBoxLayout,
+    QLabel, QLineEdit, QMessageBox, QPushButton, QTextEdit, QVBoxLayout, QWidget)
 from tudatpy.astro import element_conversion
 
-EARTH_MU = 398600.4418  # км³/с²
+EARTH_MU = 398600.4418
 
 
 class OrbitConverter(QWidget):
@@ -22,7 +19,7 @@ class OrbitConverter(QWidget):
         layout.addWidget(QLabel('Преобразование орбитальных элементов'))
 
         self.mode = QComboBox()
-        self.mode.addItems(['Декартовы → Кеплеровы', 'Кеплеровы → Декартовы'])
+        self.mode.addItems(['Декартовы в Кеплеровы', 'Кеплеровы в Декартовы'])
         self.mode.currentIndexChanged.connect(self.change_mode)
         layout.addWidget(self.mode)
 
@@ -30,7 +27,7 @@ class OrbitConverter(QWidget):
         self.form = QFormLayout(self.group)
         self.entries = []
         self.labels = []
-        for _ in range(6):
+        for i in range(6):
             entry = QLineEdit()
             label = QLabel()
             self.entries.append(entry)
@@ -39,7 +36,7 @@ class OrbitConverter(QWidget):
         layout.addWidget(self.group)
 
         mu_row = QHBoxLayout()
-        mu_row.addWidget(QLabel('Гравитационный параметр μ (км³/с²):'))
+        mu_row.addWidget(QLabel('Гравитационный параметр mu (км^3/с^2):'))
         self.mu_entry = QLineEdit(str(EARTH_MU))
         mu_row.addWidget(self.mu_entry)
         layout.addLayout(mu_row)
@@ -61,7 +58,7 @@ class OrbitConverter(QWidget):
                       'V_x (км/с)', 'V_y (км/с)', 'V_z (км/с)']
             defaults = ['7000', '0', '0', '0', '7.5', '1.0']
         else:
-            labels = ['a (км)', 'e', 'i (°)', 'ω (°)', 'Ω (°)', 'ν (°)']
+            labels = ['a (км)', 'e', 'i (°)', 'omega (°)', 'Omega (°)', 'nu (°)']
             defaults = ['7000', '0.01', '30', '45', '60', '90']
 
         for label, entry, default, widget in zip(labels, self.entries, defaults, self.labels):
@@ -72,7 +69,7 @@ class OrbitConverter(QWidget):
     def calculate(self):
 
         try:
-            
+
             values = []
             for entry in self.entries:
                 text = entry.text()
@@ -88,7 +85,7 @@ class OrbitConverter(QWidget):
             self.output.setPlainText(result)
 
         except (ValueError, RuntimeError, OverflowError, FloatingPointError) as error:
-            QMessageBox.critical(self, 'Ошибка вычисления', str(error))
+            QMessageBox.critical(self, 'Ошибка вычисления!', str(error))
 
     def to_keplerian(self, values, mu):
 
@@ -106,9 +103,9 @@ class OrbitConverter(QWidget):
         result = (f'{first}: {a / 1000:.8f} км\n'
                   f'Эксцентриситет e: {e:.10f}\n'
                   f'Наклонение i: {angles[0]:.8f}°\n'
-                  f'Аргумент перицентра ω: {angles[1]:.8f}°\n'
-                  f'Долгота восходящего узла Ω: {angles[2]:.8f}°\n'
-                  f'Истинная аномалия ν: {angles[3]:.8f}°')
+                  f'Аргумент перицентра omega: {angles[1]:.8f}°\n'
+                  f'Долгота восходящего узла Omega: {angles[2]:.8f}°\n'
+                  f'Истинная аномалия nu: {angles[3]:.8f}°')
 
         return result
 
@@ -131,6 +128,7 @@ class OrbitConverter(QWidget):
         state = element_conversion.keplerian_to_cartesian(elements, mu * 1e9) / 1000
         names = ('x', 'y', 'z', 'V_x', 'V_y', 'V_z')
         lines = []
+
         for name, value in zip(names, state):
             unit = 'км' if name in ('x', 'y', 'z') else 'км/с'
             lines.append(f'{name}: {value:.8f} {unit}')
